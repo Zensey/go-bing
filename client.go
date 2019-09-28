@@ -21,11 +21,7 @@ func NewClient(token string) *Client {
 }
 
 //Simple Bing Search function
-func (c *Client) Search(search string) (*BingAnswer, error) {
-	if len(search) > 1500 {
-		return nil, fmt.Errorf("Query lenght must be < 1500 characters")
-	}
-	query := NewQuery(search)
+func (c *Client) Search(query *Query) (*BingAnswer, error) {
 	//Build the request
 	req, err := query.buildRequest()
 	if err != nil {
@@ -40,6 +36,7 @@ func (c *Client) Search(search string) (*BingAnswer, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	fmt.Println(resp.Status, err)
 
 	//Retrieve request Body
 	body, err := ioutil.ReadAll(resp.Body)

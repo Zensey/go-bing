@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/Nhoya/go-bing"
+
+	"github.com/Zensey/go-bing"
 )
 
 func main() {

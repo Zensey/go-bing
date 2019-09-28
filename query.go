@@ -1,6 +1,11 @@
 package bing
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
+)
 
 type Query struct {
 	//The number of answers that you want the response to include. The answers that Bing returns are based on ranking. For example, if Bing returns webpages, images, videos, and relatedSearches for a request and you set this parameter to two (2), the response includes webpages and images.
@@ -37,19 +42,40 @@ func NewQuery(query string) *Query {
 	}
 }
 
+func (query *Query) SetCount(c int16) {
+	query.Count = c
+}
+
+func (query *Query) SetOffset(o int16) {
+	query.Offset = o
+}
+
 func (query *Query) buildRequest() (*http.Request, error) {
+	if len(query.Q) > 1500 {
+		return nil, fmt.Errorf("Query lenght must be < 1500 characters")
+	}
+
 	req, err := http.NewRequest("GET", "https://api.cognitive.microsoft.com/bing/v7.0/search", nil)
 	if err != nil {
 		return req, err
 	}
-	query.setDefaultRequestParam(req)
+	k := query.setDefaultRequestParam()
+
+	if query.Count != 0 {
+		k.Add("count", strconv.Itoa(int(query.Count)))
+	}
+	if query.Offset != 0 {
+		k.Add("offset", strconv.Itoa(int(query.Offset)))
+	}
+
+	req.URL.RawQuery = k.Encode()
 	return req, nil
 }
 
-func (query *Query) setDefaultRequestParam(req *http.Request) {
+func (query *Query) setDefaultRequestParam() url.Values {
 	//Set GET parameters
-	k := req.URL.Query()
+	k := url.Values{}
 	k.Add("q", query.Q)
 	k.Add("safeSearch", query.SafeSearch)
-	req.URL.RawQuery = k.Encode()
+	return k
 }
